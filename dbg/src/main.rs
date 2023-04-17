@@ -42,6 +42,9 @@ fn launch_debugger() {
 		}
 
 		std::process::Command::new(devenv)
+			.arg("/NoSplash")
+			.arg("/Command")
+			.arg("Debug.Start")
 			.arg("/DebugExe")
 			.arg(executable_path)
 			.args(std::env::args().skip(3))
@@ -54,11 +57,25 @@ fn launch_debugger() {
 	}
 }
 
+fn attach_debugger() {
+	if let Some(devenv) = find_vs_devenv() {
+		std::process::Command::new(devenv)
+			.arg("/NoSplash")
+			.arg("/Command")
+			.arg("Debug.AttachToProcess hello.exe")
+			.spawn()
+			.unwrap()
+			.wait()
+			.unwrap();
+	}
+}
+
 fn main() {
 	let subcommand = std::env::args().nth(1).unwrap();
 
 	match subcommand.as_str() {
 		"launch" => launch_debugger(),
+		"attach" => attach_debugger(),
 		_ => panic!("Unknown subcommand: {}", subcommand),
 	};
 }
