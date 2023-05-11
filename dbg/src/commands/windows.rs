@@ -1,6 +1,11 @@
 use super::super::util::windows::find_vs_devenv;
+use std::ffi::OsStr;
 
-pub fn launch(executable_path: &str) {
+pub fn launch<I, S>(executable_path: &str, args: I)
+where
+	I: IntoIterator<Item = S>,
+	S: AsRef<OsStr>,
+{
 	if let Some(devenv) = find_vs_devenv() {
 		std::process::Command::new(devenv)
 			.arg("/NoSplash")
@@ -8,7 +13,7 @@ pub fn launch(executable_path: &str) {
 			.arg("Debug.Start")
 			.arg("/DebugExe")
 			.arg(executable_path)
-			.args(std::env::args().skip(3))
+			.args(args)
 			.spawn()
 			.unwrap()
 			.wait()
