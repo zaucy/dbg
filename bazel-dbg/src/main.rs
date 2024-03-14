@@ -43,9 +43,14 @@ fn main() {
 		}
 		.replace("\\", "/");
 
-	dbg!(&dbg_executable_path);
+	let bazel_executable = which::which("aspect")
+		.or_else(|_| which::which("bazelisk"))
+		.or_else(|_| which::which("bazel"))
+		.expect(
+			"bazel, bazelisk, or aspect must be available in your PATH to use bazel-dbg",
+		);
 
-	let mut bazel_proc = std::process::Command::new("bazel")
+	let mut bazel_proc = std::process::Command::new(bazel_executable)
 		.arg("run")
 		.arg(format!("--run_under={} launch ", dbg_executable_path))
 		.args(std::env::args().skip(1))
