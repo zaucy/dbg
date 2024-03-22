@@ -1,11 +1,13 @@
 use super::super::util::windows::find_vs_devenv;
 use std::ffi::OsStr;
 
-pub fn launch<I, S>(executable_path: &str, args: I)
+pub fn launch<I, S>(debugger: Option<String>, executable_path: &str, args: I)
 where
 	I: IntoIterator<Item = S>,
 	S: AsRef<OsStr>,
 {
+	assert!(matches!(debugger.as_deref(), Some("msvc") | None));
+
 	if let Some(devenv) = find_vs_devenv() {
 		std::process::Command::new(devenv)
 			.arg("/NoSplash")
@@ -23,7 +25,9 @@ where
 	}
 }
 
-pub fn attach() {
+pub fn attach(debugger: Option<String>) {
+	assert!(matches!(debugger.as_deref(), Some("msvc") | None));
+
 	if let Some(devenv) = find_vs_devenv() {
 		std::process::Command::new(devenv)
 			.arg("/NoSplash")
