@@ -4,7 +4,7 @@ pub mod util;
 use clap::Parser;
 use util::resolve_executable_path;
 
-#[derive(Parser)] // requires `derive` feature
+#[derive(Parser)]
 #[command(name = "dbg")]
 #[command(bin_name = "dbg")]
 enum Args {

@@ -1,6 +1,23 @@
 use std::{env::consts::EXE_SUFFIX, process::Stdio};
 
+use clap::Parser;
 use which::which;
+
+#[derive(Parser)]
+#[command(name = "bazel-dbg", version, about)]
+struct Args {
+	// Path to bazel, defaults bazel, bazelisk, or aspect on your PATH
+	#[arg(long)]
+	bazel_path: Option<String>,
+
+	// Path to dbg, defaults to one on your PATH
+	#[arg(long)]
+	dbg_path: Option<String>,
+
+	// Arguments passed to bazel
+	#[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+	bazel_args: Vec<String>,
+}
 
 fn find_dbg_executable() -> Option<std::path::PathBuf> {
 	let current_exe = std::env::current_exe();
@@ -24,16 +41,19 @@ fn find_dbg_executable() -> Option<std::path::PathBuf> {
 }
 
 fn main() {
-	let dbg_executable_path = std::fs::canonicalize(
-		find_dbg_executable().expect(
-			format!("Cannot find 'dbg{EXE_SUFFIX}' locally or in PATH")
-				.as_str(),
-		),
-	)
-	.unwrap()
-	.to_str()
-	.unwrap()
-	.to_owned();
+	let args = Args::parse();
+	let dbg_executable_path = args.dbg_path.unwrap_or_else(|| {
+		std::fs::canonicalize(
+			find_dbg_executable().expect(
+				format!("Cannot find 'dbg{EXE_SUFFIX}' locally or in PATH")
+					.as_str(),
+			),
+		)
+		.unwrap()
+		.to_str()
+		.unwrap()
+		.to_owned()
+	});
 
 	let dbg_executable_path =
 		if let Some(p) = dbg_executable_path.strip_prefix("\\\\?\\") {
@@ -43,20 +63,21 @@ fn main() {
 		}
 		.replace("\\", "/");
 
-	let bazel_executable = which::which("aspect")
-		.or_else(|_| which::which("bazelisk"))
-		.or_else(|_| which::which("bazel"))
-		.expect(
-			"bazel, bazelisk, or aspect must be available in your PATH to use bazel-dbg",
-		);
+	let bazel_executable = args.bazel_path.unwrap_or_else(|| {
+		which::which("aspect")
+			.or_else(|_| which::which("bazelisk"))
+			.or_else(|_| which::which("bazel"))
+			.expect(
+				"bazel, bazelisk, or aspect must be available in your PATH to use bazel-dbg",
+			)
+			.to_string_lossy()
+			.to_string()
+	});
 
 	let mut bazel_proc = std::process::Command::new(bazel_executable)
-		.stdin(Stdio::inherit())
-		.stdout(Stdio::piped())
-		.stderr(Stdio::piped())
 		.arg("run")
 		.arg(format!("--run_under={} launch ", dbg_executable_path))
-		.args(std::env::args().skip(1))
+		.args(args.bazel_args)
 		.spawn()
 		.expect("Failed to spawn bazel process");
 
