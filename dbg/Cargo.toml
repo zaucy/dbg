@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = "4.2.2"
+clap = { version = "4.2.2", features = ["derive"] }
 vswhere = "0.1.0"
 which = "4.4.0"

@@ -1,4 +1,4 @@
-use std::env::consts::EXE_SUFFIX;
+use std::{env::consts::EXE_SUFFIX, process::Stdio};
 
 use which::which;
 
@@ -51,6 +51,9 @@ fn main() {
 		);
 
 	let mut bazel_proc = std::process::Command::new(bazel_executable)
+		.stdin(Stdio::inherit())
+		.stdout(Stdio::piped())
+		.stderr(Stdio::piped())
 		.arg("run")
 		.arg(format!("--run_under={} launch ", dbg_executable_path))
 		.args(std::env::args().skip(1))
