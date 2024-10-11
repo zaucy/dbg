@@ -32,6 +32,9 @@ struct LaunchArgs {
 struct AttachArgs {
 	#[arg(long, short)]
 	debugger: Option<String>,
+
+	#[arg(last = true)]
+	source_files: Vec<String>,
 }
 
 fn main() {
