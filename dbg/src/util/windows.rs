@@ -20,12 +20,10 @@ pub fn find_vs_installation_path() -> Option<std::path::PathBuf> {
 		.output()
 		.unwrap();
 
-	let vswhere_output = std::str::from_utf8(&vswhere_output.stdout)
-		.unwrap()
-		.trim()
-		.to_string();
+	let vswhere_output = std::str::from_utf8(&vswhere_output.stdout).unwrap();
+	let first_line = vswhere_output.lines().next()?.trim();
 
-	return Some(std::path::PathBuf::from(vswhere_output));
+	return Some(std::path::PathBuf::from(first_line));
 }
 
 pub fn find_vs_devenv() -> Option<std::path::PathBuf> {
@@ -37,12 +35,10 @@ pub fn find_vs_devenv() -> Option<std::path::PathBuf> {
 		.output()
 		.unwrap();
 
-	let vswhere_output = std::str::from_utf8(&vswhere_output.stdout)
-		.unwrap()
-		.trim()
-		.to_string();
+	let vswhere_output = std::str::from_utf8(&vswhere_output.stdout).unwrap();
+	let first_line = vswhere_output.lines().next()?.trim();
 
-	let devenv_path = std::path::PathBuf::from(vswhere_output);
+	let devenv_path = std::path::PathBuf::from(first_line);
 
 	if !devenv_path.exists() {
 		return None;
